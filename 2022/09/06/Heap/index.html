@@ -18,57 +18,57 @@
   
     <meta name="description" content="Heaphttps:&#x2F;&#x2F;www.cnblogs.com&#x2F;luoleqi&#x2F;p&#x2F;11801400.html Structmalloc_chunkheap_infomalloc_stateFunctions and MacrosMacrosFunctionsArenaVulnerableHouse of Force概述用一个较大的值来重写top_chunk的大小字段，然后请求足够的内存来弥补顶块和目标数">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Ferity-Fan&#39;s Blog">
-<meta property="og:url" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap/index.html">
+<meta property="og:title" content="Heap">
+<meta property="og:url" content="https://ferity-fan.github.io/2022/09/06/Heap/index.html">
 <meta property="og:site_name" content="Ferity-Fan&#39;s Blog">
 <meta property="og:description" content="Heaphttps:&#x2F;&#x2F;www.cnblogs.com&#x2F;luoleqi&#x2F;p&#x2F;11801400.html Structmalloc_chunkheap_infomalloc_stateFunctions and MacrosMacrosFunctionsArenaVulnerableHouse of Force概述用一个较大的值来重写top_chunk的大小字段，然后请求足够的内存来弥补顶块和目标数">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap/Heap.assets/image-20220814132821567.png">
-<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap/Heap.assets/image-20220814133216729.png">
-<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap/Heap.assets/image-20220816100317563.png">
-<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap/Heap.assets/image-20220816100752788.png">
-<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap/Heap.assets/image-20220816101120303.png">
-<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap/Heap.assets/image-20220814164430494.png">
-<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap/Heap.assets/image-20220814182744179.png">
-<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap/Heap.assets/image-20220814194641198.png">
-<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap/Heap.assets/image-20220814212052885.png">
-<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap/Heap.assets/image-20220814212638115.png">
-<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap/Heap.assets/image-20220814214814810.png">
-<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap/Heap.assets/image-20220820160146712.png">
-<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap/Heap.assets/image-20220820161049541.png">
-<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap/Heap.assets/image-20220820162024274.png">
-<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap/Heap.assets/image-20220820164643151.png">
-<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap/Heap.assets/image-20220820181022737.png">
-<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap/Heap.assets/image-20220820173211603.png">
-<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap/Heap.assets/image-20220820173412011.png">
-<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap/Heap.assets/image-20220820174021017.png">
-<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap/Heap.assets/image-20220820174213853.png">
-<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap/Heap.assets/image-20220820175408919.png">
-<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap/Heap.assets/image-20220820184826255.png">
-<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap/Heap.assets/image-20220821113749445.png">
-<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap/Heap.assets/image-20220821114003739.png">
-<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap/Heap.assets/image-20220821115406447.png">
-<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap/Heap.assets/image-20220821115524129.png">
-<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap/Heap.assets/image-20220821115602029.png">
-<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap/Heap.assets/image-20220821115655834.png">
-<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap/Heap.assets/image-20220821120333916.png">
-<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap/Heap.assets/image-20220903173420886.png">
-<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap/Heap.assets/image-20220903173447945.png">
-<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap/Heap.assets/image-20220903173735492.png">
-<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap/Heap.assets/image-20220903174353252.png">
-<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap/Heap.assets/image-20220903175411826.png">
-<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap/Heap.assets/image-20220903181246083.png">
-<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap/Heap.assets/image-20220903182117957.png">
-<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap/Heap.assets/image-20220903182811281.png">
-<meta property="article:published_time" content="2022-09-06T07:48:40.389Z">
-<meta property="article:modified_time" content="2022-09-06T08:01:04.486Z">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220814132821567.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220814133216729.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220816100317563.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220816100752788.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220816101120303.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220814164430494.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220814182744179.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220814194641198.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220814212052885.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220814212638115.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220814214814810.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220820160146712.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220820161049541.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220820162024274.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220820164643151.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220820181022737.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220820173211603.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220820173412011.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220820174021017.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220820174213853.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220820175408919.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220820184826255.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220821113749445.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220821114003739.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220821115406447.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220821115524129.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220821115602029.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220821115655834.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220821120333916.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220903173420886.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220903173447945.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220903173735492.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220903174353252.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220903175411826.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220903181246083.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220903182117957.png">
+<meta property="og:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220903182811281.png">
+<meta property="article:published_time" content="2022-09-06T08:01:33.456Z">
+<meta property="article:modified_time" content="2022-09-06T08:08:28.828Z">
 <meta property="article:author" content="Ferity-Fan">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap/Heap.assets/image-20220814132821567.png">
+<meta name="twitter:image" content="https://ferity-fan.github.io/2022/09/06/Heap/Heap.assets/image-20220814132821567.png">
   
   
   
-  <title>Ferity-Fan&#39;s Blog</title>
+  <title>Heap - Ferity-Fan&#39;s Blog</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -262,7 +262,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text=""></span>
+            <span id="subtitle" data-typed-text="Heap"></span>
           
         </div>
 
@@ -273,7 +273,7 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2022-09-06 15:48" pubdate>
+        <time datetime="2022-09-06 16:01" pubdate>
           2022年9月6日 下午
         </time>
       </span>
@@ -342,7 +342,7 @@
         <div id="board">
           <article class="post-content mx-auto">
             <!-- SEO header -->
-            <h1 style="display: none"></h1>
+            <h1 style="display: none">Heap</h1>
             
             
               <div class="markdown-body">
@@ -617,15 +617,15 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2022/09/06/Heap/" title="Heap">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Heap</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
+                    
+                      <a href="/2022/09/06/Heap/Heap/" title="">
+                        <span class="hidden-mobile"></span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
                     
                   </article>
                 </div>
